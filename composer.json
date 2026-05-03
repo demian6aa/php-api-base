@@ -1,0 +1,17 @@
+{
+    "name": "demian/api",
+    "description": "Backend API with PHP",
+    "type": "project",
+    "autoload": {
+        "psr-4": {
+            "App\\": "app/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Demian A",
+            "email": "146421652+demian6aa@users.noreply.github.com"
+        }
+    ],
+    "require": {}
+}
