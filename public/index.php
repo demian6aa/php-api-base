@@ -14,8 +14,8 @@ $request = new Request();
 (require __DIR__ . '/../routes/api.php')($router);
 
 
-//Save the return of dispatch in router // the values for the dispatch method comes from the request class function calls
-$router -> dispatch ($request -> getMethod(), $request -> getUri());
+
+$router -> dispatch ($request);
 
 
 

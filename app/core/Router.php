@@ -2,6 +2,9 @@
 
 namespace App\core; //We define the namespace of the Router class, so that we can use it in other files without having to worry about naming conflicts with other classes that might have the same name in other namespaces. It also helps to organize our code and make it more modular and reusable.
 
+
+use App\core\Request;
+
 class Router
 {
   private array $routes = [];
@@ -25,8 +28,11 @@ class Router
     ];
   }
 
-  public function dispatch (string $method, string $uri)
+  public function dispatch (Request $request)
   {
+    $method = $request -> getMethod();
+    $uri = $request -> getUri();
+
     //We check for each object in the array if they match the particularities we are looking for.
     foreach ($this -> routes as $route){
       if($route['method'] === $method && preg_match($route['pattern'], $uri, $matches))
@@ -43,7 +49,7 @@ class Router
           return;
         }
     }
-    http_response_code(404);
+    // http_response_code(404);
     Response::json(["error" => "Route not found"], 404);
 
   }
