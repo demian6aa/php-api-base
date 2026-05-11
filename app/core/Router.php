@@ -6,35 +6,72 @@ class Router
 {
   private array $routes = [];
 
-  public function get ($path, $action)
+
+  public function get(string $path, array $action)
   {
-    $this->routes[] = 
+      $this -> addRoute('GET', $path, $action);
+  }
+
+  private function addRoute (string $method, string $path, array $action)
+  {
+    $pattern = preg_replace('/\{(\w+)\}/', '([^/]+)', $path); // Extract data from the raw path with regex
+    $pattern = '#^' . $pattern . '$#';
+
+    $this -> routes[] = //
     [
-      'method' => 'GET',
-      'path' => $path,
+      'method' => $method,
+      'pattern' => $pattern,
       'action' => $action
     ];
-
   }
 
-  public function dispatch ($method , $uri)
+  public function dispatch (string $method, string $uri)
   {
-    foreach ($this->routes as $route)
-    {
-      if ($route['method'] === $method && $route['path'] === $uri)
-      {
-        [$controller, $function] = $route['action'];
+    //We check for each object in the array if they match the particularities we are looking for.
+    foreach ($this -> routes as $route){
+      if($route['method'] === $method && preg_match($route['pattern'], $uri, $matches))
+        {
+          //Remove the first item of the array since we don't need it.
+          array_shift($matches);
 
-        (new $controller)->$function();
-        return;
+          //Assign the controller and the function we want to some variables to use them later
+          [$controller, $function] = $route['action'];
 
-      }
+
+          //Create a new 'homeController' object and call the 'user' function on it, passing the extracted data as arguments to the function. The '...' operator is used to unpack the array of matches into individual arguments that can be passed to the function.
+          (new $controller)->$function(...$matches); 
+          return;
+        }
     }
-
     http_response_code(404);
-    echo json_encode(["error" => "Route not found"]);
+    Response::json(["error" => "Route not found"], 404);
 
   }
+
+
+
+
+
+
+
+  // public function dispatch (string $method , string $uri)
+  // {
+  //   foreach ($this->routes as $route)
+  //   {
+  //     if ($route['method'] === $method && $route['path'] === $uri)
+  //     {
+  //       [$controller, $function] = $route['action'];
+
+  //       (new $controller)->$function();
+  //       return;
+
+  //     }
+  //   }
+
+  //   http_response_code(404);
+  //   echo json_encode(["error" => "Route not found"]);
+
+  // }
 
 
 
