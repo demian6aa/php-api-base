@@ -4,6 +4,7 @@ namespace App\Controllers;
 
 use App\core\Response;
 use App\core\Request;
+use App\core\Validator;
 
 Class HomeController
 {
@@ -21,6 +22,15 @@ Class HomeController
   public function store (Request $request)
   {
     $data = $request -> getBody();
+    $error = Validator::required($data, 'name');
+
+    if($error)
+    {
+      Response::json(["Error " => $error], 422);
+      return;
+    }
+
+
 
     Response::json([
         "message" => "User created",
