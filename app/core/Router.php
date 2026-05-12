@@ -45,13 +45,17 @@ class Router
 
 
           //Create a new 'homeController' object and call the 'user' function on it, passing the extracted data as arguments to the function. The '...' operator is used to unpack the array of matches into individual arguments that can be passed to the function.
-          (new $controller)->$function(...$matches); 
+          (new $controller)->$function($request ,...$matches); 
           return;
         }
     }
     // http_response_code(404);
     Response::json(["error" => "Route not found"], 404);
+  }
 
+  public function post (string $path, array $action)
+  {
+    $this -> addRoute('POST', $path, $action);
   }
 
 
