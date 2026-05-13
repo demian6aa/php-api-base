@@ -22,11 +22,12 @@ Class HomeController
   public function store (Request $request)
   {
     $data = $request -> getBody();
-    $error = Validator::required($data, 'name');
+    // $error = Validator::required($data, 'name');
+    $errors = Validator::validate($data, ['name' => ['required', 'min:3']]);
 
-    if($error)
+    if(!empty($errors))
     {
-      Response::json(["Error " => $error], 422);
+      Response::json(['errors'=> $errors], 422);
       return;
     }
 
