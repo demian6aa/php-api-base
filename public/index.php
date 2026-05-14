@@ -3,19 +3,28 @@
 require_once __DIR__ . '/../vendor/autoload.php'; //load the class autoloader of the composer 
 use App\core\Router;
 use App\core\Request;
+use App\core\Database;
+use Dotenv\Dotenv;
+
+$dotenv = Dotenv::createImmutable(__DIR__. '/../');
+$dotenv -> load();
+
 
 header('Content-Type: application/json'); 
+
+Database::connect();
+echo "DB conected";
 
 
 $router = new Router(); //router creation
 $request = new Request();
-
  //Load api.php and pass the router as an argument to it, so that it can define the routes on it
 (require __DIR__ . '/../routes/api.php')($router);
-
-
-
 $router -> dispatch ($request);
+
+
+
+
 
 
 
