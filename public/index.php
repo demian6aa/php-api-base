@@ -13,7 +13,6 @@ $dotenv -> load();
 header('Content-Type: application/json'); 
 
 Database::connect();
-echo "DB conected";
 
 
 $router = new Router(); //router creation

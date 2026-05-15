@@ -20,6 +20,7 @@ class Request
 
     // error_log ("actual uri: " . $this->uri);
 
+    // $this->body = json_decode(file_get_contents('php://input'),true)??[];
 
     $input = file_get_contents('php://input');
     $this -> body = json_decode($input, true) ?? [];
@@ -27,20 +28,20 @@ class Request
 
 
 #REGION Getters
-  function getMethod ()
+  public function getMethod ()
   { 
     return $this -> method;
 
   }
-  function getUri ()
+  public function getUri ()
   {
     return $this -> uri;
   }
-  function getQueryParams ()
+  public function getQueryParams ()
   {
     return $this -> queryParams;
   }
-  function getBody ()
+  public function getBody ()
   {
     return $this -> body;
   }

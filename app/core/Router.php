@@ -20,7 +20,7 @@ class Router
     $pattern = preg_replace('/\{(\w+)\}/', '([^/]+)', $path); // Extract data from the raw path with regex
     $pattern = '#^' . $pattern . '$#';
 
-    $this -> routes[] = //
+    $this -> routes[] = 
     [
       'method' => $method,
       'pattern' => $pattern,
@@ -53,12 +53,24 @@ class Router
     Response::json(["error" => "Route not found"], 404);
   }
 
-  public function post (string $path, array $action)
+  public function post (string $path, array $action) : void
   {
-    $this -> addRoute('POST', $path, $action);
+    $this->routes[] = [
+      'method' => 'POST',
+      'path'  => $path,
+      'pattern' => "#^" . preg_replace('/\{[^\/]+\}/', '([^/]+)', $path) . "$#",
+      'action'  => $action,
+    ];
+
+
+    #DEPRECATED
+    // $this -> addRoute('POST', $path, $action);
   }
 
-
+  public function delete(string $path, array $action) : void
+  {
+    $this->addRoute('DELETE', $path, $action);
+  }
 
 
 
