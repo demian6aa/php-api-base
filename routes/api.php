@@ -11,8 +11,6 @@ return function ($router) {
     
     $router -> delete('/users/{id}', [HomeController::class, 'destroy']);
 
+    $router -> put('/users/{id}', [HomeController::class, 'update']);
 
-
-#DEPRECATED
-    // $router -> get('/users/{id}', [HomeController::class, 'user']);
  };

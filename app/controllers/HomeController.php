@@ -109,7 +109,53 @@ Class HomeController
     
   }
 
+  public function update(Request $request, string $id): void
+  {
+    $data = $request->getBody();
 
+    $errors = Validator::validate($data,[
+      'name' => ['required, min:3']
+    ]);
+    if($errors){
+      Response::json([
+        'errors' => $errors
+      ], 422);
+      return;
+    }
+
+
+
+    $pdo = Database::connect();
+    $checkStatement = $pdo -> prepare("
+      SELECT id
+      FROM users
+      WHERE id = :id
+    ");
+    $checkStatement ->execute(['id' => $id]);
+
+    
+    $userExists = $checkStatement->fetch();
+    if(!$userExists)
+    {
+      Response::json([
+        'error' => 'User not found'
+      ], 404);
+      return;
+    }
+
+    $statement = $pdo -> prepare("
+      UPDATE users
+      SET name = :name
+      WHERE id = :id
+    ");
+    $statement -> execute([
+      'name' => $data['name'],
+      'id' => $id
+    ]);
+
+    Response::json(['message' => 'User updated']);
+
+  }
 
 
 

@@ -72,7 +72,10 @@ class Router
     $this->addRoute('DELETE', $path, $action);
   }
 
-
+  public function put(string $path, array $action): void
+  {
+    $this -> addRoute('PUT', $path, $action);
+  }
 
 
 
