@@ -2,11 +2,10 @@
 
 namespace App\Controllers;
 
-use App\core\Database;
 use App\core\Response;
 use App\core\Request;
 use App\core\Validator;
-use PDO;
+use App\models\UserModel;
 
 Class HomeController
 {
@@ -17,105 +16,57 @@ Class HomeController
     $data = $request -> getBody();
 
     $errors = Validator::validate($data, ['name' => ['required', 'min:3']]); 
-
     if ($errors)
     {
       Response::json(['errors' => $errors], 422);
       return;
     }
 
-    $pdo = Database::connect();
-    $statement = $pdo->prepare("
-      INSERT INTO users (name) 
-      VALUES(:name) 
-    ");
 
-    $statement->execute([
-      'name' => $data['name']
-    ]);
-
+    $user = UserModel::create($data);
 
     Response::json([
-      'message' => 'User created'
+      'message' => 'User created',
+      'data' => $user
     ], 201);
-
   }
-
 
   // All index
-  public function index(Request $request)
+  public function index(Request $request):void
   {
-    $pdo = Database::connect();
-
-    $statement = $pdo->query("
-      SELECT *
-      FROM users
-      ORDER BY id DESC   
-    ");
-
-    $users = $statement->fetchAll(PDO::FETCH_ASSOC);
+    $users = UserModel::all();
     Response::json($users);
-
-    #DEPRECATED
-    // Response::json(["message: " => "API working"]);
   }
   
-  //
   public function show(Request $request, string $id) : void
   {
-    $pdo = Database::connect();
-    
-    $statement = $pdo->prepare("
-      SELECT *
-      FROM users
-      WHERE id = :id
-    ");
-
-    $statement->execute([
-      'id' => $id
-    ]);
-
-
-
-    $user = $statement ->fetch(PDO::FETCH_ASSOC);
+    $user = UserModel::find($id);
     if(!$user)
     {
-      Response::json([
-        'error' => 'User not found'
-      ], 404);
+      Response::json(['error' => 'User not found'], 404);
       return;
     }
-    Response::json($user);
 
+    Response::json($user);
   }
 
   public function destroy (Request $request, string $id) : void
   {
-     $pdo = Database::connect();
-
-     $statement = $pdo->prepare("
-        DELETE FROM users
-        WHERE id = :id
-     ");
-     $statement->execute(['id' => $id]);
-
-
-    if ($statement->rowCount() === 0 )
+    $user = UserModel::delete($id);
+    if(!$user)
     {
-      Response::json(['error' => 'User not found'], 404);
-      return;     
+      Response::json(['error' => 'User not found'],404);
+      return;
     }
-    Response::json(['message' => 'User deleted']);
-    
+
+    Response::json(['message' => 'User deleted', 'data' => $user]);
   }
 
   public function update(Request $request, string $id): void
   {
     $data = $request->getBody();
 
-    $errors = Validator::validate($data,[
-      'name' => ['required, min:3']
-    ]);
+    $errors = Validator::validate($data,['name' => ['required, min:3']]);
     if($errors){
       Response::json([
         'errors' => $errors
@@ -124,18 +75,8 @@ Class HomeController
     }
 
 
-
-    $pdo = Database::connect();
-    $checkStatement = $pdo -> prepare("
-      SELECT id
-      FROM users
-      WHERE id = :id
-    ");
-    $checkStatement ->execute(['id' => $id]);
-
-    
-    $userExists = $checkStatement->fetch();
-    if(!$userExists)
+    $user = UserModel::update($id, $data);
+    if(!$user)
     {
       Response::json([
         'error' => 'User not found'
@@ -143,17 +84,7 @@ Class HomeController
       return;
     }
 
-    $statement = $pdo -> prepare("
-      UPDATE users
-      SET name = :name
-      WHERE id = :id
-    ");
-    $statement -> execute([
-      'name' => $data['name'],
-      'id' => $id
-    ]);
-
-    Response::json(['message' => 'User updated']);
+    Response::json(['message' => 'User updated', 'data'=>$user]);
 
   }
 
