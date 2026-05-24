@@ -1,6 +1,6 @@
 <?php
 
-namespace App\core;
+namespace App\Validators;
 
  class Validator
  {
@@ -19,7 +19,6 @@ namespace App\core;
             { $errors[$field][] = ucfirst($field) . ' is required'; }
           }
         }
-        
 
         //MIN LENGTH CONTROL
         if(str_starts_with($rule, 'min:'))
@@ -29,6 +28,16 @@ namespace App\core;
           if(isset($data[$field]) && strlen($data[$field])<$min)
           { $errors[$field][] = ucfirst($field) . " must be at least {$min} characters"; }
         }
+
+        //EMAIL VERIFY
+        if($rule === 'email')
+        {
+          if(isset($data[$field]) && !filter_var($data[$field], FILTER_VALIDATE_EMAIL))
+          {
+            $errors[$field][] = ucfirst($field) . ' format is invalid';
+          }
+        }
+
       }
       return $errors;
 

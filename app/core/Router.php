@@ -4,39 +4,58 @@ namespace App\core; //We define the namespace of the Router class, so that we ca
 
 
 use App\core\Request;
+use App\middlewares\AuthMiddleware;
 
 class Router
 {
   private array $routes = [];
 
 
-  public function get(string $path, array $action)
-  {
-      $this -> addRoute('GET', $path, $action);
-  }
 
-  private function addRoute (string $method, string $path, array $action)
+
+  private function addRoute (string $method, string $path, array $action, array $middlewares)
   {
     $pattern = preg_replace('/\{(\w+)\}/', '([^/]+)', $path); // Extract data from the raw path with regex
     $pattern = '#^' . $pattern . '$#';
+
 
     $this -> routes[] = 
     [
       'method' => $method,
       'pattern' => $pattern,
-      'action' => $action
+      'action' => $action,
+      'middlewares' => $middlewares
     ];
   }
+
+
+
+
 
   public function dispatch (Request $request)
   {
     $method = $request -> getMethod();
     $uri = $request -> getUri();
 
+
+
     //We check for each object in the array if they match the particularities we are looking for.
-    foreach ($this -> routes as $route){
+    foreach ($this -> routes as $route)
+    {
       if($route['method'] === $method && preg_match($route['pattern'], $uri, $matches))
         {
+          foreach ($route['middlewares'] as $middleware)
+          {
+            $middlewareInstance = new $middleware();
+            $passed = $middlewareInstance -> handle($request);
+
+            if(!$passed)
+            {
+              return;
+            }
+
+          }
+
           //Remove the first item of the array since we don't need it.
           array_shift($matches);
 
@@ -53,50 +72,37 @@ class Router
     Response::json(["error" => "Route not found"], 404);
   }
 
-  public function post (string $path, array $action) : void
+  public function get(string $path, array $action, array $middlewares =[])
+  {
+      $this -> addRoute('GET', $path, $action, $middlewares);
+      
+  }
+
+  public function post (string $path, array $action, array $middlewares =[]) : void
   {
     $this->routes[] = [
       'method' => 'POST',
       'path'  => $path,
       'pattern' => "#^" . preg_replace('/\{[^\/]+\}/', '([^/]+)', $path) . "$#",
       'action'  => $action,
+      'middlewares' => $middlewares
     ];
 
 
-    #DEPRECATED
-    // $this -> addRoute('POST', $path, $action);
   }
 
-  public function delete(string $path, array $action) : void
+  public function delete(string $path, array $action, array $middlewares =[]) : void
   {
-    $this->addRoute('DELETE', $path, $action);
+    $this->addRoute('DELETE', $path, $action, $middlewares);
   }
 
-  public function put(string $path, array $action): void
+  public function put(string $path, array $action, array $middlewares =[]): void
   {
-    $this -> addRoute('PUT', $path, $action);
+    $this -> addRoute('PUT', $path, $action, $middlewares);
   }
 
 
 
-  // public function dispatch (string $method , string $uri)
-  // {
-  //   foreach ($this->routes as $route)
-  //   {
-  //     if ($route['method'] === $method && $route['path'] === $uri)
-  //     {
-  //       [$controller, $function] = $route['action'];
-
-  //       (new $controller)->$function();
-  //       return;
-
-  //     }
-  //   }
-
-  //   http_response_code(404);
-  //   echo json_encode(["error" => "Route not found"]);
-
-  // }
 
 
 

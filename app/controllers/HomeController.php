@@ -4,9 +4,11 @@ namespace App\Controllers;
 
 use App\core\Response;
 use App\core\Request;
-use App\core\Validator;
+
 use App\models\UserModel;
 
+use App\Validators\UserValidator;
+use App\Validators\Validator;
 Class HomeController
 {
 
@@ -15,12 +17,16 @@ Class HomeController
   {
     $data = $request -> getBody();
 
-    $errors = Validator::validate($data, ['name' => ['required', 'min:3']]); 
-    if ($errors)
+    $errors = Validator::validate($data, UserValidator::store()); 
+    if (!empty($errors))
     {
       Response::json(['errors' => $errors], 422);
       return;
     }
+
+    $data['password'] = password_hash(
+      $data['password'], PASSWORD_DEFAULT
+    );
 
 
     $user = UserModel::create($data);
@@ -35,6 +41,8 @@ Class HomeController
   public function index(Request $request):void
   {
     $users = UserModel::all();
+    
+    foreach($users as &$user){unset($user['password']);}
     Response::json($users);
   }
   
@@ -46,7 +54,7 @@ Class HomeController
       Response::json(['error' => 'User not found'], 404);
       return;
     }
-
+    unset($user['password']);
     Response::json($user);
   }
 
@@ -66,8 +74,8 @@ Class HomeController
   {
     $data = $request->getBody();
 
-    $errors = Validator::validate($data,['name' => ['required, min:3']]);
-    if($errors){
+    $errors = Validator::validate( $data,UserValidator::update());
+    if(!empty($errors)){
       Response::json([
         'errors' => $errors
       ], 422);

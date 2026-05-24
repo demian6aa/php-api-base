@@ -5,13 +5,13 @@ namespace App\models;
 use App\core\Database;
 use PDO;
 
-class UserModel
+class UserModel extends BaseModel
 {
   public static function all(): array
   {
-    $pdo = Database::connect();
+    self::init();
 
-    $statement = $pdo->query("
+    $statement = self::$pdo->query("
       SELECT *
       FROM users
       ORDER BY id DESC
@@ -22,9 +22,9 @@ class UserModel
 
   public static function find(string $id): array|false
   {
-    $pdo = Database::connect();
+    self::init();
 
-    $statement = $pdo->prepare("
+    $statement = self::$pdo->prepare("
       SELECT * 
       FROM users 
       WHERE id = :id
@@ -36,23 +36,30 @@ class UserModel
 
   public static function create(array $data): array
   {
-    $pdo= Database::connect();
+    self::init();
 
-    $statement = $pdo->prepare("
-      INSERT INTO users (name)
-      VALUES (:name)
+    $statement = self::$pdo->prepare("
+      INSERT INTO users (name, email, password)
+      VALUES (:name, :email, :password)
+
       RETURNING *
     ");
-    $statement->execute(['name'=>$data['name']]);
+    $statement->execute([
+      'name'=>$data['name'], 
+      'email'=> $data['email'],
+      'password'=>$data['password']
+    ]);
 
-    return $statement->fetch(PDO::FETCH_ASSOC);
+    $user = $statement->fetch(PDO::FETCH_ASSOC);
+    unset($user['password']);
+    return $user;
   }
 
   public static function update(string $id, array $data): array|false
   {
-    $pdo = Database::connect();
+    self::init();
 
-    $statement = $pdo->prepare("
+    $statement = self::$pdo->prepare("
         UPDATE users
         SET name = :name
         WHERE id = :id
@@ -68,10 +75,9 @@ class UserModel
 
   public static function delete(string $id) : array|false
   { 
-    $pdo = Database::connect();
-
-    
-    $statement = $pdo->prepare("
+    self::init();
+ 
+    $statement = self::$pdo->prepare("
       DELETE FROM users
       WHERE id = :id
       RETURNING *
